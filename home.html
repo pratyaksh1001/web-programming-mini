@@ -9,8 +9,10 @@
     <body class="bg-black w-screen text-white">
         <div id="navbar" class="w-full bg-blue-600 p-2 rounded-b-md flex">
             <a href="home.html" class="text-2xl w-fit">Keep It Up</a>
-            <div class="ml-auto w-fit">
+            <div class="ml-auto w-fit flex gap-4">
+                <span id="welcome-user" class="text-lg"></span>
                 <a href="tasklist.html" class="w-fit text-2xl">Task List</a>
+                <button id="logout-button" class="w-fit text-lg bg-red-600 px-3 py-1 rounded">Logout</button>
             </div>
         </div>
         <div id="add-section" class="mt-32 bg-blue-600 w-1/2 ml-auto mr-auto">
@@ -33,14 +35,29 @@
         </div>
     </body>
     <script>
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser) {
+            window.location.href = "login.html";
+        }
+
+        document.getElementById("welcome-user").textContent = `Welcome, ${currentUser.username}!`;
+
+        document.getElementById("logout-button").addEventListener("click", () => {
+            localStorage.removeItem("currentUser");
+            window.location.href = "login.html";
+        });
+
         var addButton = document.getElementById("add-button");
 
-        var tasks = JSON.parse(localStorage.getItem("tasklist"));
-
-        if (tasks == null) {
-            tasks = [];
+        var users = JSON.parse(localStorage.getItem("users")) || [];
+        var currentUserIndex = users.findIndex(u => u.username === currentUser.username);
+        
+        if (currentUserIndex === -1) {
+            window.location.href = "login.html";
         }
-        console.log(tasks);
+
+        var tasks = users[currentUserIndex].tasks || [];
+
         class Task {
             constructor(title, content, date, deadline) {
                 this.title = title;
@@ -55,19 +72,21 @@
             var title = document.getElementById("title").value;
             var content = document.getElementById("content").value;
             var deadline = document.getElementById("deadline").value;
-            console.log(deadline);
-            console.log(content);
-            console.log(title);
-            console.log(localStorage.getItem("hello"));
+            
             var newTask = new Task(
                 title,
                 content,
                 new Date().getFullYear(),
                 deadline,
             );
+            
             tasks.push(newTask);
-            console.log(tasks);
-            localStorage.setItem("tasklist", JSON.stringify(tasks));
+            users[currentUserIndex].tasks = tasks;
+            localStorage.setItem("users", JSON.stringify(users));
+            
+            document.getElementById("title").value = "";
+            document.getElementById("content").value = "";
+            document.getElementById("deadline").value = "";
         });
     </script>
 </html>
