@@ -1,60 +1,36 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Keep It Up</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-black">
-<div id="navbar" class="bg-blue-600 h-12">
-    <p class="p-2 ml-auto mr-auto text-2xl w-fit">Keep It Up</p>
-</div>
-<div id="main" class="text-white">
-
-    <input id="data" class="text-black">
-
-    <button id="add" class="p-2 bg-blue-600">
-        add
-    </button>
-    <div id="task-list">
-
-    </div>
-</div>
-</body>
-
-<script>
-
-    class Task {
-        constructor(content, time) {
-            this.content = content;
-            this.time = time;
-        }
-    }
-
-    if (localStorage.getItem('data')) {
-        var tasklist = JSON.parse(localStorage.getItem('data'));
-    } else {
-        var tasklist = [];
-        localStorage.setItem('data', JSON.stringify(tasklist));
-    }
-    for (var task of tasklist) {
-        document.getElementById("task-list").append(task.content);
-    }
-
-
-    var add = document.getElementById("add");
-    add.addEventListener("click", () => {
-        tasklist = localStorage.getItem("tasklist");
-        tasklist = JSON.parse(tasklist);
-        var data = document.getElementById("data").value;
-        var date = new Date().getDate();
-        var newtask = new Task(data, date);
-        tasklist.push(newtask);
-        document.getElementById("data").value = "";
-        document.getElementById("task-list").innerHTML = "";
-        localStorage.setItem("tasklist", JSON.stringify(tasklist));
-    })
-
-</script>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Home</title>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    </head>
+    <body class="bg-black w-screen text-white">
+        <div id="navbar" class="w-full bg-blue-600 p-2 rounded-b-md flex">
+            <a href="home.html" class="text-2xl w-fit">Keep It Up</a>
+            <div class="ml-auto w-fit">
+                <a href="tasklist.html" class="w-fit text-2xl">Task List</a>
+            </div>
+        </div>
+        <div id="add-section" class="mt-32 bg-blue-600 w-1/2 ml-auto mr-auto">
+            <p class="w-fit ml-auto mr-auto text-xl">Enter the task details</p>
+            <input
+                type="text"
+                id="title"
+                placeholder="   Enter the Task Title"
+                class="w-fit bg-gray-50 text-black h-12"
+            />
+            <textarea
+                placeholder="enter the content"
+                class="bg-gray-50 text-black mt-10"
+                id="content"
+            ></textarea>
+            <br />
+            <label for="deadline">enter deadline</label>
+            <input type="date" id="deadline" name="deadline" />
+            <button class="" id="add-button">Add task</button>
+        </div>
+    </body>
+    <script src="home.js"></script>
 </html>
