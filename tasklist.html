@@ -8,14 +8,18 @@
     </head>
     <body class="bg-black w-screen text-white">
         <div id="navbar" class="w-full bg-blue-600 p-2 rounded-b-md flex">
-            <a href="home.html" class="text-2xl w-fit">Keep It Up</a>
+            <a href="tasklist.html" class="text-2xl w-fit">Keep It Up</a>
             <div class="ml-auto w-fit flex gap-4">
                 <span id="welcome-user" class="text-lg"></span>
-                <a href="home.html" class="w-fit text-2xl">Home</a>
                 <button id="logout-button" class="w-fit text-lg bg-red-600 px-3 py-1 rounded">Logout</button>
             </div>
         </div>
-        <div id="add-section" class="mt-32 bg-blue-600 w-1/2 ml-auto mr-auto">
+        <div id="sort-section" class="mt-8 w-1/2 ml-auto mr-auto text-center">
+            <button id="sort-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Sort by Deadline
+            </button>
+        </div>
+        <div id="add-section" class="mt-8 bg-blue-600 w-1/2 ml-auto mr-auto">
             <p class="w-fit ml-auto mr-auto text-xl">Enter the task details</p>
             <input
                 type="text"
@@ -36,88 +40,148 @@
         <div id="tasklist"></div>
     </body>
     <script>
-        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-        if (!currentUser) {
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        if (!user) {
             window.location.href = "login.html";
         }
 
-        document.getElementById("welcome-user").textContent = `Welcome, ${currentUser.username}!`;
+        document.getElementById("welcome-user").textContent = "Welcome, " + user.username + "!";
 
-        document.getElementById("logout-button").addEventListener("click", () => {
+        document.getElementById("logout-button").onclick = function() {
             localStorage.removeItem("currentUser");
             window.location.href = "login.html";
-        });
+        };
 
-        function refreshlist() {
-            var users = JSON.parse(localStorage.getItem("users")) || [];
-            var currentUserIndex = users.findIndex(u => u.username === currentUser.username);
+        function showTasks() {
+            const users = JSON.parse(localStorage.getItem("users")) || [];
+            const userIndex = users.findIndex(u => u.username === user.username);
             
-            if (currentUserIndex === -1) {
+            if (userIndex === -1) {
                 window.location.href = "login.html";
                 return;
             }
 
-            var tasklist = users[currentUserIndex].tasks || [];
-            var task_tag = document.getElementById("tasklist");
-            task_tag.innerHTML = "";
+            const tasks = users[userIndex].tasks || [];
+            const taskDiv = document.getElementById("tasklist");
+            taskDiv.innerHTML = "";
             
-            if (tasklist.length === 0) {
-                task_tag.innerHTML = "<p class='text-center text-gray-400 mt-8'>No tasks yet. Add some tasks from the home page!</p>";
+            if (tasks.length === 0) {
+                taskDiv.innerHTML = "<p class='text-center text-gray-400 mt-8'>No tasks yet. Add some tasks from the home page!</p>";
                 return;
             }
 
-            for (var task of tasklist) {
-                var x = document.createElement("div");
-                x.className = "bg-gray-800 p-4 m-2 rounded border-l-4 border-blue-500";
-                x.innerHTML = `
-                    <div>
-                        <strong class="text-xl">${task.title}</strong><br>
-                        <p class="mt-2">${task.content}</p><br>
-                        <em class="text-yellow-400">Deadline: ${task.deadline}</em>
+            for (let i = 0; i < tasks.length; i++) {
+                const task = tasks[i];
+                const taskElement = document.createElement("div");
+                taskElement.className = "bg-gray-800 p-4 m-2 rounded border-l-4 border-blue-500";
+                taskElement.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <strong class="text-xl">${task.title}</strong><br>
+                            <p class="mt-2">${task.content}</p><br>
+                            <em class="text-yellow-400">Deadline: ${task.deadline}</em>
+                        </div>
+                        <button class="delete-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded ml-4" data-index="${i}">
+                            Delete
+                        </button>
                     </div>
                 `;
-                task_tag.appendChild(x);
+                taskDiv.appendChild(taskElement);
             }
         }
 
-        refreshlist();
-        var addButton = document.getElementById("add-button");
+        showTasks();
 
-        var users = JSON.parse(localStorage.getItem("users")) || [];
-        var currentUserIndex = users.findIndex(u => u.username === currentUser.username);
-        var tasks = users[currentUserIndex].tasks || [];
+        const addBtn = document.getElementById("add-button");
+        const sortBtn = document.getElementById("sort-button");
+        let sorted = false;
 
-        class Task {
-            constructor(title, content, date, deadline) {
-                this.title = title;
-                this.content = content;
-                this.date = date;
-                this.done = false;
-                this.deadline = deadline;
-            }
-        }
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const userIndex = users.findIndex(u => u.username === user.username);
+        const tasks = users[userIndex].tasks || [];
 
-        addButton.addEventListener("click", () => {
-            var title = document.getElementById("title").value;
-            var content = document.getElementById("content").value;
-            var deadline = document.getElementById("deadline").value;
+        addBtn.onclick = function() {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+            const deadline = document.getElementById("deadline").value;
             
-            var newTask = new Task(
-                title,
-                content,
-                new Date().getFullYear(),
-                deadline,
-            );
+            const newTask = {
+                title: title,
+                content: content,
+                deadline: deadline,
+                date: new Date().getFullYear()
+            };
             
             tasks.push(newTask);
-            users[currentUserIndex].tasks = tasks;
+            users[userIndex].tasks = tasks;
             localStorage.setItem("users", JSON.stringify(users));
             
             document.getElementById("title").value = "";
             document.getElementById("content").value = "";
             document.getElementById("deadline").value = "";
             
-            refreshlist();
-        });
+            showTasks();
+        };
+
+        sortBtn.onclick = function() {
+            const users = JSON.parse(localStorage.getItem("users")) || [];
+            const userIndex = users.findIndex(u => u.username === user.username);
+            
+            if (userIndex === -1) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            const tasklist = users[userIndex].tasks || [];
+            
+            if (tasklist.length === 0) {
+                return;
+            }
+
+            if (!sorted) {
+                tasklist.sort(function(a, b) {
+                    if (a.deadline === "" && b.deadline === "") return 0;
+                    if (a.deadline === "") return 1;
+                    if (b.deadline === "") return -1;
+                    return new Date(a.deadline) - new Date(b.deadline);
+                });
+                sorted = true;
+                sortBtn.textContent = "Unsort Tasks";
+                sortBtn.className = "bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded";
+            } else {
+                tasklist.sort(function(a, b) {
+                    return new Date(b.date) - new Date(a.date);
+                });
+                sorted = false;
+                sortBtn.textContent = "Sort by Deadline";
+                sortBtn.className = "bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded";
+            }
+
+            users[userIndex].tasks = tasklist;
+            localStorage.setItem("users", JSON.stringify(users));
+            showTasks();
+        };
+
+        document.onclick = function(e) {
+            if (e.target.classList.contains("delete-btn")) {
+                const taskIndex = parseInt(e.target.getAttribute("data-index"));
+                const users = JSON.parse(localStorage.getItem("users")) || [];
+                const userIndex = users.findIndex(u => u.username === user.username);
+                
+                if (userIndex === -1) {
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                const tasklist = users[userIndex].tasks || [];
+                
+                if (taskIndex >= 0 && taskIndex < tasklist.length) {
+                    tasklist.splice(taskIndex, 1);
+                    users[userIndex].tasks = tasklist;
+                    localStorage.setItem("users", JSON.stringify(users));
+                    showTasks();
+                }
+            }
+        };
     </script>
 </html>
